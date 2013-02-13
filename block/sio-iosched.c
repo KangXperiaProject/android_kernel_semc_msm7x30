@@ -305,11 +305,11 @@ sio_var_store(int *var, const char *page, size_t count)
 #define SHOW_FUNCTION(__FUNC, __VAR, __CONV)				\
 static ssize_t __FUNC(struct elevator_queue *e, char *page)		\
 {									\
-	struct sio_data *sd = e->elevator_data;			\
+	struct sio_data *sd = e->elevator_data;				\
 	int __data = __VAR;						\
 	if (__CONV)							\
 		__data = jiffies_to_msecs(__data);			\
-	return sio_var_show(__data, (page));			\
+	return sio_var_show(__data, (page));				\
 }
 SHOW_FUNCTION(sio_sync_read_expire_show, sd->fifo_expire[SYNC][READ], 1);
 SHOW_FUNCTION(sio_sync_write_expire_show, sd->fifo_expire[SYNC][WRITE], 1);
@@ -322,7 +322,7 @@ SHOW_FUNCTION(sio_writes_starved_show, sd->writes_starved, 0);
 #define STORE_FUNCTION(__FUNC, __PTR, MIN, MAX, __CONV)			\
 static ssize_t __FUNC(struct elevator_queue *e, const char *page, size_t count)	\
 {									\
-	struct sio_data *sd = e->elevator_data;			\
+	struct sio_data *sd = e->elevator_data;				\
 	int __data;							\
 	int ret = sio_var_store(&__data, (page), count);		\
 	if (__data < (MIN))						\
@@ -390,10 +390,15 @@ static void __exit sio_exit(void)
 	elv_unregister(&iosched_sio);
 }
 
+#ifdef CONFIG_FAST_RESUME
+beforeresume_initcall(sio_init);
+#else
 module_init(sio_init);
+#endif
 module_exit(sio_exit);
 
 MODULE_AUTHOR("Miguel Boton");
 MODULE_LICENSE("GPL");
 MODULE_DESCRIPTION("Simple IO scheduler");
 MODULE_VERSION("0.2");
+
